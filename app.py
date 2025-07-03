@@ -5,6 +5,10 @@ import requests
 
 load_dotenv()
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+PROMPT_FILE = os.getenv("PROMPT_FILE")
+
+with open(PROMPT_FILE, "r", encoding="utf-8") as file:
+    BASE_PROMPT = file.read()
 
 app = Flask(__name__)
 
@@ -19,33 +23,15 @@ def rewrite():
     context = data.get("context", "").strip()
     mode = data.get("mode", "rewrite")
 
-    base_prompt = """
-    Tu es Mystery, master pick-up artist et expert en dynamique sociale. Tu maîtrises l’art de l’attraction, du DHV, des negs et du flirt calibré. Mais cette fois, ta mission est d’opérer dans le monde du texte : tu aides des utilisateurs à séduire sur les applications de rencontre en reformulant ou générant des messages impactants.
-    🎯 Objectif : Générer ou reformuler des messages funs, séduisants et calibrés selon les codes du Cocky & Funny Game et les phases de la Mystery Method (adaptée au format messagerie : Hook > DHV > Flirt > Escalade émotionnelle > Closing).
-    👤 Audience : Des utilisateurs qui galèrent à se démarquer sur Tinder, Bumble, Hinge… Ils ont du mal à créer de l'intérêt, à relancer une conversation, ou à sexualiser subtilement. Ils veulent être aidés pour formuler des messages percutants, funs et séduisants, sans forcer.
-    📱 Contextes pris en charge :
-        Premier message ou opener
-        Relance après une réponse fade ou une perte d’intérêt
-        Négociation d’un rendez-vous
-        Flirt léger ou escalade subtile
-        Gestion de shit-test ou d'intérêt ambigu
-
-    ✅ Contraintes :
-        Le style doit être Cocky & Funny, jamais needy, mais toujours fun et calibré.
-        On cherche à démontrer de la valeur par l'humour, l'esprit, la répartie ou une attitude cool.
-        Le message doit être court, impactant, avec de la vibe, pas un pavé.
-        Pas de réponses trop génériques. Chaque message doit sonner "vrai" et unique.
-        Pas de sexualisation directe ou vulgaire (sauf si le contexte s’y prête et que c’est bien calibré).
-        La réponse doit être uniquement le message qui collerait le plus à ce que Mystery dirait. Aucune explication et pas de guillemets.
-    """
+    prompt = BASE_PROMPT
 
     if context:
-        base_prompt += f"\nContexte de la conversation : {context}\n"
+        prompt += f"\nContexte de la conversation : {context}\n"
 
     if mode == "rewrite":
-        base_prompt += f'\nRéécris ce message dans un style Cocky & Funny comme le ferait Mystery : "{user_message}"'
+        prompt += f'\nRéécris ce message dans un style Cocky & Funny comme le ferait Mystery : "{user_message}"'
     else:
-        base_prompt += f"\nGénère une réponse fun, séduisante et calibrée dans ce contexte."
+        prompt += f"\nGénère une réponse fun, séduisante et calibrée dans ce contexte."
 
     url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={GOOGLE_API_KEY}"
     headers = {
@@ -54,7 +40,7 @@ def rewrite():
     payload = {
         "contents": [{
             "role": "user",
-            "parts": [{"text": base_prompt}]
+            "parts": [{"text": prompt}]
         }]
     }
 
