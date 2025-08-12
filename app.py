@@ -49,7 +49,8 @@ def generate_response(prompt: str) -> dict:
 
 @app.route("/")
 def home():
-    return render_template("index.html")
+    ga_id = os.getenv("GA_ID")
+    return render_template("index.html", ga_id=ga_id)
 
 @app.route("/rewrite", methods=["POST"])
 def rewrite():
